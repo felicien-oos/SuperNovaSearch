@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>NovaSearch</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #fff; margin: 0; padding: 0; text-align: center; }
+    header { background-color: #f0f0f0; padding: 20px; font-size: 24px; font-weight: bold; }
+    .search-section { margin-top: 20px; }
+    input[type="text"] {
+      padding: 10px;
+      width: 60%;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      background-color: #4285f4;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .results, .similar-sites, .qa-section { margin-top: 30px; }
+    .site-list, .qa-list { list-style-type: none; padding: 0; }
+    .site-list li, .qa-list li { margin: 10px 0; }
+    .site-list a { text-decoration: none; color: #4285f4; }
+    footer { position: fixed; bottom: 0; width: 100%; background: #eee; padding: 10px; display: flex; justify-content: center; gap: 30px; }
+    footer img { width: 24px; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <header>Bienvenue sur NovaSearch, que puis-je faire pour vous ?</header>
+
+  <div class="search-section">
+    <input type="text" id="searchInput" placeholder="Entrez votre recherche...">
+    <button onclick="search()">Rechercher</button>
+  </div>
+
+  <div class="ads">
+    <h3>Publicités</h3>
+    <p>[Annonce 1] [Annonce 2] [Annonce 3]</p>
+  </div>
+
+  <div class="recommendations">
+    <h3>Recommandations</h3>
+    <p>[Vidéo conseillée] [Lien intéressant] [Application utile]</p>
+  </div>
+
+  <div class="results">
+    <h3>Résultat principal</h3>
+    <ul class="site-list" id="mainResult"></ul>
+  </div>
+
+  <div class="similar-sites">
+    <h3>Sites similaires</h3>
+    <ul class="site-list" id="similarResults"></ul>
+  </div>
+
+  <div class="qa-section">
+    <h3>Questions liées</h3>
+    <ul class="qa-list" id="qaResults"></ul>
+  </div>
+
+  <div class="no-answer" id="noAnswer" style="display: none;">
+    <h3>Désolé, je ne sais pas...</h3>
+    <p>Essayez de trouver la réponse sur l'un des sites suivants :</p>
+    <ul id="suggestedSites"></ul>
+    <p id="suggestedQuestion" style="margin-top: 20px; font-weight: bold;"></p>
+  </div>
+
+  <footer>
+    <div><a href="https://www.youtube.com" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/7/75/YouTube_social_white_squircle.svg"> YouTube</a></div>
+    <div><a href="https://www.instagram.com" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Instagram_icon.png"> Instagram</a></div>
+    <div><a href="https://www.facebook.com" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"> Facebook</a></div>
+    <button onclick="alert('Ajouter un lien personnalisé')">Plus</button>
+  </footer>
+
+  <script>
+    const knownSites = {
+      "google": "https://www.google.com",
+      "firefox": "https://www.mozilla.org/fr/firefox/",
+      "wikipedia": "https://fr.wikipedia.org/wiki/Accueil",
+      "openai": "https://chat.openai.com",
+      "wolframalpha": "https://www.wolframalpha.com",
+      "khanacademy": "https://www.khanacademy.org",
+      // Plus de sites ajoutés ici
+    };
+
+    const qaDatabase = {
+      "4 plus 4": "8",
+      // Ajoute ici plus de questions-réponses connues
+    };
+
+    function search() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const main = document.getElementById("mainResult");
+      const similar = document.getElementById("similarResults");
+      const qa = document.getElementById("qaResults");
+      const noAnswerSection = document.getElementById("noAnswer");
+      const suggestedSites = document.getElementById("suggestedSites");
+      const suggestedQuestion = document.getElementById("suggestedQuestion");
+
+      main.innerHTML = "";
+      similar.innerHTML = "";
+      qa.innerHTML = "";
+      noAnswerSection.style.display = "none";
+      suggestedSites.innerHTML = "";
+      suggestedQuestion.innerHTML = "";
+
+      if (!input) return;
+
+      // Vérifier si la question a une réponse
+      if (qaDatabase[input]) {
+        // Si la question a une réponse
+        main.innerHTML += `<li><strong>Réponse : </strong>${qaDatabase[input]}</li>`;
+      } else {
+        // Si la question n'a pas de réponse, afficher un message et des sites similaires
+        noAnswerSection.style.display = "block";
+
+        // Proposer des sites pour aider à trouver la réponse en fonction de la question
+        if (input.includes("plus") || input.includes("addition") || input.includes("calcul")) {
+          suggestedSites.innerHTML += `<li><a href="https://www.wolframalpha.com/input/?i=${encodeURIComponent(input)}" target="_blank">Calculer sur WolframAlpha</a></li>`;
+        }
+        if (input.includes("math") || input.includes("calcul")) {
+          suggestedSites.innerHTML += `<li><a href="https://www.khanacademy.org" target="_blank">Apprendre les mathématiques sur Khan Academy</a></li>`;
+        }
+        suggestedSites.innerHTML += `<li><a href="https://www.google.com/search?q=${encodeURIComponent(input)}" target="_blank">Rechercher sur Google</a></li>`;
+        suggestedSites.innerHTML += `<li><a href="https://chat.openai.com" target="_blank">Rechercher avec ChatGPT</a></li>`;
+
+        // Afficher une question similaire
+        suggestedQuestion.innerHTML = `Peut-être que vous voulez savoir : <strong>"Quel est le résultat de ${input} ?" </strong>`;
+      }
+
+      // Générer un résultat principal avec lien si existant
+      const link = knownSites[input] || `https://www.example.com/search?q=${encodeURIComponent(input)}`;
+      main.innerHTML += `<li><a href="${link}" target="_blank"><strong>Site :</strong> ${capitalize(input)}</a> (simulé parmi 200 000 sites)</li>`;
+
+      // Générer des sites similaires
+      for (let i = 1; i <= 5; i++) {
+        similar.innerHTML += `<li>Site similaire ${i} autour de ${capitalize(input)}</li>`;
+      }
+
+      // Générer des questions-réponses liées
+      for (let j = 1; j <= 5; j++) {
+        qa.innerHTML += `<li><strong>Q:</strong> ${generateQuestion(input, j)}<br><strong>R:</strong> ${generateAnswer(input, j)}</li>`;
+      }
+    }
+
+    function capitalize(text) {
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function generateQuestion(keyword, index) {
+      return `Quel est le lien entre ${capitalize(keyword)} et la science ${index}?`;
+    }
+
+    function generateAnswer(keyword, index) {
+      return `${capitalize(keyword)} est utilisé dans la recherche scientifique pour l'étude n°${index}.`;
+    }
+  </script>
+</body>
+</html>
